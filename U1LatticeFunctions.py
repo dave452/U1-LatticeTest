@@ -186,6 +186,7 @@ def update(lattice, beta, suggested_change):
                     start[3] = z
                     for mu in range(4):
                           accept, S_change, lattice = change_link(lattice,beta,np.random.normal(0., suggested_change), start, mu)
+                          #accept, S_change, lattice = change_link(lattice,beta,suggested_change * np.sign(np.random.rand() - 0.5), start, mu)
                           if(accept):
                               accept_prob += 1.
     accept_prob = accept_prob / (4 * lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3])
@@ -221,12 +222,15 @@ def main(lattice_size, beta, suggested_change, N_t, N_c, N_o, output_filename, s
     average_plaquette  = 0.
     VEV_average_plaquette = 0.
     
+    average_accept_prob = 0.
     for i in range(N_t):
         lattice, accept_prob = update(lattice, beta, suggested_change)
         print('{:.0f}/{:.0f}-Acceptance Probability: {:.3f}'.format(i+1,N_t,accept_prob))
+        average_accept_prob += accept_prob
     
+    average_accept_prob = average_accept_prob / N_t
     output_file.write('\nThermalisation complete')
-    
+    output_file.write('\nAverage Acceptance Probability [{:.3f}]'.format(average_accept_prob))
     for i in range(N_o):
         output_file.write('\nMeasurement[{:.0f}]'.format(i))
         

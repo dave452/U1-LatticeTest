@@ -23,12 +23,17 @@ def findPlaq(filename, N_obs):
     print(filename, 'complete')
     return Plaq
 
-files = np.array(["output_file1.txt","output_file2.txt","output_file3.txt","output_file4.txt"])
-N_obs = 250
+files = np.array([                  "./output/output_file7.txt"])
+N_obs = 500
 N_seeds = files.shape[0]
 full_Plaq = np.zeros((N_obs, N_seeds))
 for i in range(N_seeds):
     full_Plaq[:,i] = findPlaq(files[i], N_obs)
 plt.hist(full_Plaq.flatten(), density=True)
+plt.show()
 print(full_Plaq.flatten().mean())
 print(full_Plaq.flatten().std())
+for i in range(N_seeds):
+    plt.plot(full_Plaq[:,i], range(N_obs))
+    plt.title(i)
+    plt.show()
