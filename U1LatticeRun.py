@@ -11,14 +11,14 @@ import U1LatticeTestFunctions as U1Test
 #Defines a Lattice sizes  
 #N = [Lattice Size Time, L.S x, L.S y, L.S z]
 
-lattice_size = [4,5,5,5]
+lattice_size = [4,6,6,6]
 beta = 1
-suggested_change = np.pi/6 # standard deviation of the change
+suggested_change = np.pi/8 # standard deviation of the change
 N_t = 5000 # thermalisation steps
 N_c = 1 # number of steps between observations (assumed correlated)
 N_o = 10000 # number of oberservations 
-seed = 4564
+seed = 4565
 filename = './output/'+str(lattice_size[0])+str(lattice_size[1])+str(lattice_size[2])+str(lattice_size[3])+'b'+str(beta)+'s'+str(seed) + '.txt'
 U1.main(lattice_size, beta, suggested_change, N_t, N_c, N_o, filename ,seed)
-#test_plaquette(lattice_size, beta)
+#U1Test.shapeOfLink(lattice_size)
 #U1Test.test_action(lattice_size, beta)

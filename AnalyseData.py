@@ -8,32 +8,35 @@ Created on Fri Jan 22 10:55:41 2021
 import numpy as np
 import matplotlib.pyplot as plt
 
-def findPlaq(filename, N_obs):
+def findPlaq(filename, N_obs, N_ends):
     file = open(filename)
-    Plaq = np.zeros((N_obs))
+    Plaq = np.zeros((N_obs, N_ends))
     line = file.readline()
-    i = 0
-    while line[:3] != 'END':
-        if(line[:19] == 'Average Plaquette: '):
-            Plaq[i] = float(line[19:])
-            i += 1
+    
+    for j in range(N_ends):
+        i = 0
+        while line[:3] != 'END':
+            if(line[:19] == 'Average Plaquette: '):
+                Plaq[i,j] = float(line[19:])
+                i += 1
+            line = file.readline()
         line = file.readline()
     file.close()
     print(i)
     print(filename, 'complete')
     return Plaq
 
-files = np.array([                  "./output/output_file7.txt"])
-N_obs = 500
+files = np.array(["./output/4666b1s4565.txt"])
+N_obs = 10000
 N_seeds = files.shape[0]
-full_Plaq = np.zeros((N_obs, N_seeds))
-for i in range(N_seeds):
-    full_Plaq[:,i] = findPlaq(files[i], N_obs)
-plt.hist(full_Plaq.flatten(), density=True)
+N_ends = 1
+full_Plaq = np.zeros((N_obs, N_ends))
+full_Plaq[:,:] = findPlaq(files[0], N_obs, N_ends)
+plt.hist(full_Plaq.flatten(),bins =100, density=True)
 plt.show()
-print(full_Plaq.flatten().mean())
-print(full_Plaq.flatten().std())
-for i in range(N_seeds):
+print(full_Plaq.mean(axis = 0))
+print(full_Plaq.std(axis = 0))
+for i in range(N_ends):
     plt.plot(full_Plaq[:,i], range(N_obs))
     plt.title(i)
     plt.show()
