@@ -8,6 +8,7 @@ Created on Fri Jan 22 10:55:41 2021
 import numpy as np
 import matplotlib.pyplot as plt
 
+    
 def findPlaq(filename, N_obs):
     file = open(filename)
     Plaq = np.zeros((N_obs))
@@ -92,6 +93,7 @@ files = np.array(["./output/4444b0.94s345.txt","./output/4444b0.94s94.txt",
                   "./output/4444b0.99s987.txt","./output/4444b0.99s760.txt",
                   "./output/4444b1s1.txt","./output/4444b1s2.txt","./output/4444b1s3.txt","./output/4444b1s4.txt",
                   "./output/4444b1.01s3454.txt", "./output/4444b1.01s205.txt"])
+
 N_f = np.array([2,2,2,2,2,2,4,2])
 beta = [0.94,0.95,0.96,0.97,0.98,0.99,1,1.01]
 cols = ['b', 'g', 'r', 'c','m','y','k','b', 'g', 'r', 'c','m','y','k']
@@ -145,7 +147,6 @@ CV_px = ((237. - CV_px) * (10. / 212.))
 plt.plot( beta_px,CV_px, 'b--')
 plt.xlabel('$\\beta$')
 plt.ylabel('$C_v$')
-
 
 
 

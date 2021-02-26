@@ -81,7 +81,7 @@ def plaquette(lattice,start_ind, directions):
     
     return U1_field_change.sum()
 
-def average_plaq(lattice, beta):
+def average_plaq(lattice):
     #Calculates the plaquette for the lattice in full for the current field configuration
     S = 0
     start = [0,0,0,0]
@@ -233,7 +233,7 @@ def main(lattice_size, beta, suggested_change, N_t, N_c, N_o, output_filename, s
         for j in range(N_c):
             lattice, accept_prob = update(lattice, beta, suggested_change)
         #Calculate and output average plaquette of current configuration
-        average_plaquette = average_plaq(lattice, beta)
+        average_plaquette = average_plaq(lattice)
         output_file.write('\nAverage Plaquette: {:.5f}'.format(average_plaquette))
         print('{:.0f}/{:.0f}-Average Plaquette: {:.3f}'.format(i+1,N_o,average_plaquette))
         
