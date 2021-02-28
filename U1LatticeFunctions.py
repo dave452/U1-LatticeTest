@@ -126,7 +126,7 @@ def action_due_to_link(lattice,beta,current_ind, link_ind):
     S *= - beta
     return S
   
-def change_link(lattice,beta, link_change, current_ind, link_ind):
+def change_link(lattice,beta, link_change, current_ind, link_ind, S, E, dE):
     #Decide whether to change link based on Boltzmann weight related to action due to selected link
     #Outputs whether the change is accepted, the change in the action, and the currect lattice configuration
     
@@ -140,14 +140,14 @@ def change_link(lattice,beta, link_change, current_ind, link_ind):
     
     #Decide whether to accept the change to the lattice link
     activ_prob = np.exp(-S_change)
-    accept = (np.random.rand() < activ_prob)
+    accept = (np.random.rand() < activ_prob) and (((S + S_change) <= (E+dE)) and ((S + S_change) >= (E)))
     if(not accept):
         #revert changes if change not accepted
         S_change = 0
         lattice[current_ind[0],current_ind[1],current_ind[2],current_ind[3]].U1_angle[link_ind] -= link_change
     return accept, S_change, lattice
 
-def update(lattice, beta, suggested_change):
+def update(lattice, beta, suggested_change, S = 0, E = -100, dE = 200, N_l = 1):
     #For each link in lattice suggest change in link and decide whether to accept it
     #Outputs acceptance probability and final lattice configuration
     
@@ -155,6 +155,7 @@ def update(lattice, beta, suggested_change):
     current_ind = [0,0,0,0]
     accept_prob = 0.
     link_change = 0.
+    dS = 0.
     
     #For every link in the lattice
     for t in range(lattice.shape[0]):
@@ -166,15 +167,17 @@ def update(lattice, beta, suggested_change):
                 for z in range(lattice.shape[3]): 
                     current_ind[3] = z
                     for link_ind in range(4):
+                        for n in range(N_l):  
                           #Suggest change and decide whether to accept it
                           link_change = np.random.uniform(low = -suggested_change , high = +suggested_change)
                           #Alternative link_change = suggested_change * np.sign(np.random.rand() - 0.5)
-                          accept, S_change, lattice = change_link(lattice,beta,link_change, current_ind, link_ind)
+                          accept, S_change, lattice = change_link(lattice,beta,link_change, current_ind, link_ind, S, E, dE)
+                          dS += S_change
                           if(accept):
                               accept_prob += 1.
     #accept_prob = Number of accepted changes / Total number of links
-    accept_prob = accept_prob / (4 * lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3])
-    return lattice, accept_prob 
+    accept_prob = accept_prob / (4 * N_l * lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3])
+    return lattice, accept_prob, dS
 
 
 
@@ -217,26 +220,26 @@ def main(lattice_size, beta, suggested_change, N_t, N_c, N_o, output_filename, s
 
     #Thermalisation of the lattice
     for i in range(N_t):
-        lattice, accept_prob = update(lattice, beta, suggested_change)
+        lattice, accept_prob, dS = update(lattice, beta, suggested_change)
         print('{:.0f}/{:.0f}-Acceptance Probability: {:.3f}'.format(i+1,N_t,accept_prob))
         average_accept_prob += accept_prob
     #Thermalsation complete
     average_accept_prob = average_accept_prob / N_t
     output_file.write('\nThermalisation complete')
     output_file.write('\nAverage Acceptance Probability [{:.3f}]'.format(average_accept_prob))
-    
+    S = average_plaq(lattice) * (- 1. * beta * (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
     #Make N_o observations
     for i in range(N_o):
         output_file.write('\nMeasurement[{:.0f}]'.format(i))
         
         #Update the lattice N_c times (find new uncorrelated configuration)
         for j in range(N_c):
-            lattice, accept_prob = update(lattice, beta, suggested_change)
+            lattice, accept_prob,dS = update(lattice, beta, suggested_change)
+            S = S + dS
         #Calculate and output average plaquette of current configuration
-        average_plaquette = average_plaq(lattice)
+        average_plaquette = (S / (- 1. * beta * (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6)))
         output_file.write('\nAverage Plaquette: {:.5f}'.format(average_plaquette))
         print('{:.0f}/{:.0f}-Average Plaquette: {:.3f}'.format(i+1,N_o,average_plaquette))
-        
         #Add current average plaquette to total average plaquette
         VEV_average_plaquette += average_plaquette
     
