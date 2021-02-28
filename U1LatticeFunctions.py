@@ -126,7 +126,7 @@ def action_due_to_link(lattice,beta,current_ind, link_ind):
     S *= - beta
     return S
   
-def change_link(lattice,beta, link_change, current_ind, link_ind, S, E, dE):
+def change_link(lattice,beta, link_change, current_ind, link_ind, S, E, dE, a_i):
     #Decide whether to change link based on Boltzmann weight related to action due to selected link
     #Outputs whether the change is accepted, the change in the action, and the currect lattice configuration
     
@@ -139,15 +139,15 @@ def change_link(lattice,beta, link_change, current_ind, link_ind, S, E, dE):
     S_change = S_new - S_current
     
     #Decide whether to accept the change to the lattice link
-    activ_prob = np.exp(-S_change)
-    accept = (np.random.rand() < activ_prob) and (((S + S_change) <= (E+dE)) and ((S + S_change) >= (E)))
-    if(not accept):
+    activ_prob = np.exp(-a_i*S_change)
+    accept = (np.random.rand() < activ_prob) and ((np.abs(S + S_change) <= np.abs(E+dE)) and (np.abs(S + S_change) >= np.abs(E)))
+    if(not accept):       
         #revert changes if change not accepted
         S_change = 0
         lattice[current_ind[0],current_ind[1],current_ind[2],current_ind[3]].U1_angle[link_ind] -= link_change
     return accept, S_change, lattice
 
-def update(lattice, beta, suggested_change, S = 0, E = -100, dE = 200, N_l = 1):
+def update(lattice, beta, suggested_change, S = 0., E = 0., dE = 1000., N_l = 1, a_i = 1):
     #For each link in lattice suggest change in link and decide whether to accept it
     #Outputs acceptance probability and final lattice configuration
     
@@ -171,7 +171,7 @@ def update(lattice, beta, suggested_change, S = 0, E = -100, dE = 200, N_l = 1):
                           #Suggest change and decide whether to accept it
                           link_change = np.random.uniform(low = -suggested_change , high = +suggested_change)
                           #Alternative link_change = suggested_change * np.sign(np.random.rand() - 0.5)
-                          accept, S_change, lattice = change_link(lattice,beta,link_change, current_ind, link_ind, S, E, dE)
+                          accept, S_change, lattice = change_link(lattice,beta,link_change, current_ind, link_ind, S, E, dE, a_i)
                           dS += S_change
                           if(accept):
                               accept_prob += 1.

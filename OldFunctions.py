@@ -4,6 +4,100 @@ Created on Sun Jan 31 14:19:27 2021
 
 @author: David
 """
+def LLRRMUpdate(lattice_size, beta, suggested_change, N_TH, N_SW, a_i, n, E_i, dE, seed = 0):
+    #initialise lattice
+    lattice = U1.create_lattice(lattice_size, seed = seed)
+    print('Seed: {:.0f}'.format(seed))
+    #initialise observables
+    average_E = 0.
+    average_accept_prob = 0.
+    accept_prob = 0.
+
+    #Thermalisation of the lattice
+    for i in range(N_TH):
+        init = True
+        while init:
+            lattice, accept_prob,dS = U1.update(lattice,beta*a_i, suggested_change)
+            E = U1.average_plaq(lattice)*beta 
+            init = (E >= (E_i + dE)) or (E <= (E_i))
+            print(E)
+        print('{:.0f}/{:.0f}-Acceptance Probability: {:.3f}'.format(i+1,N_TH,accept_prob))
+        average_accept_prob += accept_prob
+    #Thermalsation complete
+    average_accept_prob = average_accept_prob / N_TH
+    print('Average Acceptance Probability: {:.3f}'.format(average_accept_prob))
+    
+    #Make N_SW observations
+    for i in range(N_SW):
+        init = True
+        while init:
+            lattice, accept_prob = U1.update(lattice, beta*a_i, suggested_change)
+            E = U1.average_plaq(lattice)*beta 
+            init = (E >= (E_i + dE)) or (E <= (E_i))                          
+        print(E)  
+        average_E = average_E + E   
+    average_E = (average_E / float(N_SW)) - E_i - (dE/2.)
+    print("Average E: ",average_E)
+    a_i_change = (12.*average_E / ((n+1)* (dE ** 2.)))
+    if a_i_change > 1.:
+        print("ERROR")
+        a_i_change = 0.
+    return a_i_change
+
+def LLRRMUpdate2(lattice_size, beta, suggested_change, N_TH, N_SW, a_i, n, E_i, dE, seed = 0):
+    #initialise lattice
+    lattice = U1.create_lattice(lattice_size, seed = seed)
+    oldlattice = lattice
+    print('Seed: {:.0f}'.format(seed))
+    #initialise observables
+    average_E = 0.
+    average_accept_prob = 0.
+    accept_prob = 0.
+
+    #Thermalisation of the lattice
+    init = True
+    while init:
+        lattice, accept_prob = U1.update(lattice, beta*a_i, suggested_change)
+        E = U1.average_plaq(lattice)*beta 
+        init = (E >= (E_i + dE)) or (E <= (E_i))  
+        if(not init):
+            oldlattice = lattice 
+    i = 0
+    while i < N_TH:
+        lattice, accept_prob = U1.update(lattice, beta*a_i, suggested_change)
+        E = U1.average_plaq(lattice)*beta
+        init = (E >= (E_i + dE)) or (E <= (E_i)) 
+        if(init):
+            lattice = oldlattice
+        else:
+            oldlattice = lattice 
+            i += 1
+            average_accept_prob += accept_prob
+            print(i)
+    #Thermalsation complete
+    average_accept_prob = average_accept_prob / N_TH
+    print('Average Acceptance Probability: {:.3f}'.format(average_accept_prob))
+    
+    #Make N_SW observations
+    i = 0
+    while i < N_SW:
+        lattice, accept_prob = U1.update(lattice, beta*a_i, suggested_change)
+        E = U1.average_plaq(lattice)*beta 
+        init = (E >= (E_i + dE)) or (E <= (E_i))  
+        if(init):
+            lattice = oldlattice
+        else:
+            oldlattice = lattice                          
+            average_E = average_E + E 
+            i+= 1
+            print(i)
+    average_E = (average_E / float(N_SW)) - E_i - (dE/2.)
+    print("Average E: ",average_E)
+    a_i_change = (12.*average_E / ((n+1)* (dE ** 2.)))
+    if a_i_change > 1.:
+        print("ERROR a_i_change =",a_i_change)
+        a_i_change = 0.
+    return a_i_change
 def update(lattice, beta, suggested_change, change_type = 'u'):
     #For each link in lattice suggest change in link and decide whether to accept it
     #Outputs acceptance probability and final lattice configuration
