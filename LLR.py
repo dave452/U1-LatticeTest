@@ -74,7 +74,7 @@ def LLRmain(lattice_size, beta, dL, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,outpu
             a[i] = a[i] + a_change
             
             print('a_i_{:.0f}: {:.3f}'.format(n,a[i]))
-            output_file.write('\na_{:.0f}_{{:.0f}} = {:.5f}'.format(i,n,a[i]))
+            output_file.write('\na_{:.0f}_{:.0f} = {:.5f}'.format(i,n,a[i]))
             output_file.write('\nAverage Plaquette = {:.5f}'.format(VEV_E))
         print('{:.0f}/{:.0f}-a_i: {:.5f} for E_i: {:.3f}'.format(i,a_len,a[i],E_i))
         output_file.write('\na_{:.0f} = {:.5f}'.format(i,a[i]))
@@ -91,11 +91,11 @@ dL = np.pi / 2.5
 N_TH = 50 # thermalisation steps
 N_SW = 100 # number of oberservations 
 N_l = 1
-N_RM = 50
+N_RM = 200
 E_MIN = 0.57
-E_MAX = 0.67
+E_MAX = 0.58
 dE = 0.01
-seed = 200
+seed =123
 
 filename = './output/RM'+str(lattice_size[0])+str(lattice_size[1])+str(lattice_size[2])+str(lattice_size[3])+'b'+str(beta)+'s'+str(seed) + '.txt'
 a = LLRmain(lattice_size, beta, dL, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE, filename,seed = 294)
