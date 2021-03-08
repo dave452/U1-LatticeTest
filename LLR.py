@@ -8,6 +8,7 @@ Created on Tue Feb 16 10:03:13 2021
 import numpy as np
 import U1LatticeFunctions as U1
 import U1LatticeTestFunctions as U1Test
+import timeit
 #Defines a Lattice sizes  
 #N = [Lattice Size Time, L.S x, L.S y, L.S z]
 
@@ -28,13 +29,16 @@ def LLRRMUpdate(lattice_size, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, seed):
         lattice, accept_prob, S = U1.update(lattice, beta, dL, a_i = a_i)
         #print('{:.0f}/{:.0f}-Acceptance Probability: {:.3f}'.format(i+1,N_TH,accept_prob))
         average_accept_prob += accept_prob
-    
+    print('Thermalisation Done')
     S = U1.average_plaq(lattice) * (- 1. * beta * (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
     init = True
+    thermcount = 0
     while init:
+        thermcount += 1
         lattice, accept_prob, S = U1.update(lattice, beta, dL,S=S, a_i = a_i)
         init = (np.abs(S) >= np.abs(E_i + dE)) or (np.abs(S) <= np.abs(E_i))  
     #print('Thermalisation Complete, S =',S)    
+    print('Thermalisation 2 Done', thermcount)
     for i in range(N_SW):      
         #Update the lattice N_c times (find new uncorrelated configuration)
         lattice, accept_prob,S = U1.update(lattice, beta, dL, S,E_i,dE, N_l, a_i = a_i)
@@ -45,7 +49,7 @@ def LLRRMUpdate(lattice_size, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, seed):
         VEV_S += S
     #Thermalsation complete
     
-    VEV_E = VEV_S / (- 1. * beta * (N_SW*lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
+    VEV_E = VEV_S / (- 1. * (N_SW*lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
     VEV_S = ((VEV_S)/(float(N_SW))) - E_i - (dE/2.)
     #print("Average E: ",VEV_S)
     a_i_change = (12.*VEV_S / ((n+1)* (dE ** 2.)))
@@ -83,7 +87,12 @@ def LLRmain(lattice_size, beta, dL, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,outpu
     output_file.close()
     return a
 
-
+def timerFunction(lattice_size, beta, dL, N_TH, N_SW,N_l,a_i, n , E_i, dE, new_seed):
+    a_change, VEV_E = LLRRMUpdate(lattice_size, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, new_seed)
+    
+    
+    
+    
 lattice_size = [4,4,4,4]
 beta = 1.0
 dL = np.pi / 2.5
@@ -91,12 +100,17 @@ dL = np.pi / 2.5
 N_TH = 50 # thermalisation steps
 N_SW = 100 # number of oberservations 
 N_l = 1
-N_RM = 200
+N_RM = 50
 E_MIN = 0.57
-E_MAX = 0.58
+E_MAX = 0.60
 dE = 0.01
-seed =123
+seed =76
 
 filename = './output/RM'+str(lattice_size[0])+str(lattice_size[1])+str(lattice_size[2])+str(lattice_size[3])+'b'+str(beta)+'s'+str(seed) + '.txt'
-a = LLRmain(lattice_size, beta, dL, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE, filename,seed = 294)
+a = LLRmain(lattice_size, beta, dL, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE, filename,seed)
 print(a)
+
+#a_i = 1
+#n =0
+#%timeit timerFunction(lattice_size, beta, dL, N_TH, N_SW,N_l,a_i, n , E_MIN, dE, seed)
+
