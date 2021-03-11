@@ -26,18 +26,20 @@ def LLRRMUpdate(lattice_size, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, seed):
     VEV_S = 0.
     #Thermalisation of the lattice
     for i in range(N_TH):
-        lattice, accept_prob, S = U1.update(lattice, beta, dL, a_i = a_i)
+        lattice, accept_prob, S = U1.update(lattice, beta, dL,N_l = N_l, a_i = a_i)
         #print('{:.0f}/{:.0f}-Acceptance Probability: {:.3f}'.format(i+1,N_TH,accept_prob))
-        average_accept_prob += accept_prob
     print('Thermalisation Done')
     S = U1.average_plaq(lattice) * (- 1. * beta * (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
+    print(E_i)
+    print(dE)
     init = True
     thermcount = 0
     while init:
         thermcount += 1
-        lattice, accept_prob, S = U1.update(lattice, beta, dL,S=S, a_i = a_i)
-        init = (np.abs(S) >= np.abs(E_i + dE)) or (np.abs(S) <= np.abs(E_i))  
-    #print('Thermalisation Complete, S =',S)    
+        lattice, accept_prob, S = U1.update(lattice, beta, dL,S=S, a_i = a_i, llrTherm = True)
+        print(S)
+        print(accept_prob)
+        init = (np.abs(S) >= np.abs(E_i + dE)) or (np.abs(S) <= np.abs(E_i))    
     print('Thermalisation 2 Done', thermcount)
     for i in range(N_SW):      
         #Update the lattice N_c times (find new uncorrelated configuration)
@@ -45,14 +47,15 @@ def LLRRMUpdate(lattice_size, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, seed):
         #print('{:.0f}/{:.0f}-Acceptance Probability: {:.3f}'.format(i+1,N_SW,accept_prob))
         average_plaquette = (S / (- 1. * beta * (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6)))
         #print('{:.0f}/{:.0f}-Average Plaquette: {:.5f}'.format(i+1,N_SW,average_plaquette))
-        #Add current average plaquette to total average plaquette
+        #Add current average plaquette to total average plaquette+
         VEV_S += S
     #Thermalsation complete
     
     VEV_E = VEV_S / (- 1. * (N_SW*lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
     VEV_S = ((VEV_S)/(float(N_SW))) - E_i - (dE/2.)
     #print("Average E: ",VEV_S)
-    a_i_change = (12.*VEV_S / ((n+1)* (dE ** 2.)))
+    #a_i_change = (12.*VEV_S / ((n+1)* (dE ** 2.)))
+    a_i_change = (12.*VEV_S / ((1)* (dE ** 2.)))
     #print("a_i change :", a_i_change)
     return a_i_change, VEV_E
 
@@ -65,10 +68,11 @@ def LLRmain(lattice_size, beta, dL, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,outpu
     output_file.write('\nBeta:{:.5f}, N_TH:{:.5f}, N_SW:{:.5f}, N_l:{:.5f}, dTheta:{:.5f}'.format(beta,N_TH,N_SW,N_l, dL))
     output_file.write('\nN_RM:{:.5f}, E_MIN:{:.5f}, E_MAX:{:.5f}, dE:{:.5f}'.format(N_RM,E_MIN,E_MAX,dE))
     output_file.write('\nSeed: {:.0f}'.format(seed))
-    
+    output_file.close()
     a_len = int((E_MAX-E_MIN) / dE)
     a = np.ones(a_len)
     for i in range(a_len):
+        output_file = open(output_filename, 'a')
         E_i = E_MIN + (float(i) * dE)
         output_file.write('\nE_{:.0f} = {:.5f}'.format(i,E_i))
         for n in range(N_RM):
@@ -82,34 +86,42 @@ def LLRmain(lattice_size, beta, dL, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,outpu
             output_file.write('\nAverage Plaquette = {:.5f}'.format(VEV_E))
         print('{:.0f}/{:.0f}-a_i: {:.5f} for E_i: {:.3f}'.format(i,a_len,a[i],E_i))
         output_file.write('\na_{:.0f} = {:.5f}'.format(i,a[i]))
+        output_file.close()
     #Close files
+    output_file = open(output_filename, 'a')
     output_file.write('\nEND')
     output_file.close()
     return a
 
-def timerFunction(lattice_size, beta, dL, N_TH, N_SW,N_l,a_i, n , E_i, dE, new_seed):
-    a_change, VEV_E = LLRRMUpdate(lattice_size, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, new_seed)
-    
+def timerFunction():
+    #a_change, VEV_E = LLRRMUpdate(lattice_size, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, new_seed)
+    lattice_size = [4,4,4,4]
+    beta = 1
+    dL = np.pi / 2.5
+    N_l = 10
+    lattice = U1.create_lattice(lattice_size)
+    %timeit U1.update(lattice, beta, dL, N_l= N_l)
     
     
     
 lattice_size = [4,4,4,4]
-beta = 1.0
+beta = 1
 dL = np.pi / 2.5
  # standard deviation of the change
+N_B = 3
 N_TH = 50 # thermalisation steps
 N_SW = 100 # number of oberservations 
 N_l = 1
-N_RM = 50
-E_MIN = 0.57
+N_RM = 100
+E_MIN = 0.58
 E_MAX = 0.60
 dE = 0.01
-seed =76
+seed =547
 
 filename = './output/RM'+str(lattice_size[0])+str(lattice_size[1])+str(lattice_size[2])+str(lattice_size[3])+'b'+str(beta)+'s'+str(seed) + '.txt'
-a = LLRmain(lattice_size, beta, dL, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE, filename,seed)
-print(a)
-
+#a = LLRmain(lattice_size, beta, dL, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE, filename,seed)
+#print(a)
+timerFunction()
 #a_i = 1
 #n =0
 #%timeit timerFunction(lattice_size, beta, dL, N_TH, N_SW,N_l,a_i, n , E_MIN, dE, seed)
