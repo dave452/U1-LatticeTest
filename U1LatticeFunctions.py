@@ -38,7 +38,6 @@ def moveOnLattice(lattice, current_ind, move, move_ind):
             new_ind[move_ind] = 0
     if(new_ind[move_ind] < 0):
             new_ind[move_ind] = (lattice.shape[move_ind] - 1)
-
     #Gets the strength in field strength from lattice array
     if(move[move_ind] > 0): 
         U1_move_strength = lattice[current_ind[0],current_ind[1],current_ind[2],current_ind[3]].U1_angle[move_ind]
@@ -126,13 +125,14 @@ def action_due_to_link(lattice,beta,current_ind, link_ind):
     S *= - beta
     return S
   
-def change_link(lattice,beta, link_change, current_ind, link_ind, S, E, dE, a_i, N_l, llrTherm):
+def change_link(lattice,beta, dL, current_ind, link_ind, S, E, dE, a_i, N_l):
     #Decide whether to change link based on Boltzmann weight related to action due to selected link
     #Outputs whether the change is accepted, the change in the action, and the currect lattice configuration
     
     #Action due to a link in current configuration
     S_current = action_due_to_link(lattice, beta, current_ind, link_ind)
     for i in range(N_l):
+        link_change = np.random.uniform(low = -dL , high = +dL)
         #Change lattice and calculate the change in action due to change
         lattice[current_ind[0],current_ind[1],current_ind[2],current_ind[3]].U1_angle[link_ind] += link_change
         S_new = action_due_to_link(lattice, beta, current_ind, link_ind)
@@ -142,8 +142,8 @@ def change_link(lattice,beta, link_change, current_ind, link_ind, S, E, dE, a_i,
         activ_prob = np.exp(-a_i*S_change)
         accept = (np.random.rand() < activ_prob)
         llraccept = ((np.abs(S + S_change) <= np.abs(E+dE)) and (np.abs(S + S_change) >= np.abs(E)))
-        llrthermaccept = (np.abs((S + S_change) - (E+dE/2)) <=  np.abs((S) - (E+dE/2))) 
-        accept = accept and (llraccept or (llrthermaccept and llrTherm))
+        #llrthermaccept = (np.abs((S + S_change) - (E+dE/2)) <=  np.abs((S) - (E+dE/2))) 
+        accept = accept and (llraccept) # or (llrthermaccept and llrTherm)
         if(not accept):       
             #revert changes if change not accepted
             S_change = 0
@@ -153,7 +153,7 @@ def change_link(lattice,beta, link_change, current_ind, link_ind, S, E, dE, a_i,
         S += S_change
     return accept, S, lattice
 
-def update(lattice, beta, suggested_change, S = 0., E = 0., dE = 10000., N_l = 1, a_i = 1, llrTherm = False):
+def update(lattice, beta, dL, S = 0., E = 0., dE = 10000., N_l = 1, a_i = 1):
     #For each link in lattice suggest change in link and decide whether to accept it
     #Outputs acceptance probability and final lattice configuration
     
@@ -172,12 +172,12 @@ def update(lattice, beta, suggested_change, S = 0., E = 0., dE = 10000., N_l = 1
                 for z in range(lattice.shape[3]): 
                     current_ind[3] = z
                     for link_ind in range(4):  
-                          #Suggest change and decide whether to accept it
-                          link_change = np.random.uniform(low = -suggested_change , high = +suggested_change)
-                          #Alternative link_change = suggested_change * np.sign(np.random.rand() - 0.5)
-                          accept, S, lattice = change_link(lattice,beta,link_change, current_ind, link_ind, S, E, dE, a_i, N_l, llrTherm)
-                          if(accept):
-                              accept_prob += 1.
+                        #Suggest change and decide whether to accept it
+                        
+                        #Alternative link_change = suggested_change * np.sign(np.random.rand() - 0.5)
+                        accept, S, lattice = change_link(lattice,beta,dL, current_ind, link_ind, S, E, dE, a_i, N_l)
+                        if(accept):
+                            accept_prob += 1.
     #accept_prob = Number of accepted changes / Total number of links
     accept_prob = accept_prob / (4 * N_l * lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3])
     return lattice, accept_prob, S

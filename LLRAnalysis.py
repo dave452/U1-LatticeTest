@@ -23,6 +23,7 @@ def plota(filename):
         str_next = 'E_' + str(j+1) + ' ='
         str_restart = 'BEGIN'
         str_plaq = 'Average Plaquette ='
+        str_bootstrap = 'Bootstrap Iteration:' 
         if line[:len(str_next)] == str_next:              
             if (i > 0):
                 count.append(i + count[len(count) - 1])
@@ -40,31 +41,38 @@ def plota(filename):
                 a_i.clear()               
         elif line[:len(str_ai_value)] == str_ai_value:
              a_i.append(float(line[len(str_ai_value)+1:]))             
-             i += 1             
+             i += 1         
+        elif line[:len(str_bootstrap)] == str_bootstrap:
+            if float(line[len(str_bootstrap)+1:]) > 0:
+                count.append(i + count[len(count) - 1])
+                j -=1
         line = file.readline()
     file.close()
     count.append(i + count[len(count) - 1])
     A.extend(a_i)
     
-    
+    mean_final_a_i = []
+    mfa = 0.
     E = np.array(E)
     E_unique = []
-    print(A)
-    print(count)
     colours = ['b','g','r','c','m','y']
     for e in E:
         if e not in E_unique:
             E_unique.append(e)
     for e in E_unique:
+        mfa = 0.
         indices = np.where(E==e)
         c = 0
         for i in indices[0]:
-            print(len(A[count[i] : count[i+1]]))
-            print(count[i+1] - count[i+1])
             plt.plot( range(count[i+1] - count[i]),A[count[i]:count[i+1]])
+            mfa += A[count[i+1]-1]
             c += 1
+        mfa /= c
+        mean_final_a_i.append(mfa)
         plt.title('E_i = ' + str(e))
         plt.show()
+        
+    plt.plot(E_unique, mean_final_a_i, 'kx')
 
 def poop():
     P = []
@@ -84,6 +92,5 @@ def poop():
     print(P)
 
 
-filenames = './output/RM4444b1s547.txt'
+filenames = './output/RM4444b1s98.txt'
 plota(filenames)
-poop() 
