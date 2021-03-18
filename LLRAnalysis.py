@@ -92,5 +92,5 @@ def poop():
     print(P)
 
 
-filenames = './output/RM4444b1s98.txt'
+filenames = './output/RM4444b1s987.txt'
 plota(filenames)
