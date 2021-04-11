@@ -63,8 +63,8 @@ def LLRmain(lattice_size, beta, dL, N_B, N_TH, N_SW,N_l, N_NR, N_RM, E_MIN, E_MA
             E_i = E_MIN + (float(i) * dE)
             output_file.write('\nE_{:.0f} = {:.5f}'.format(i,E_i))
         
-            E_i = E_i * (-1. * beta * (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
-            dEnew = dE * (-1. * beta * (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))   
+            E_i = E_i * (-1. (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
+            dEnew = dE * (-1. (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))   
                 
             lattice = latticeInitialise(lattice, beta, dL, a[i,nb],dEnew,E_i)
             for nnr in range(N_NR):
@@ -116,31 +116,24 @@ def latticeInitialise(lattice, beta, dL, a_i, dE, E_i):
     print('Initialisation Part 2: Done, After :', thermcount, 'steps')
     return lattice
 
-def timerFunction():
-    #a_change, VEV_E = LLRRMUpdate(lattice_size, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, new_seed)
-    lattice_size = [4,4,4,4]
-    beta = 1
-    dL = np.pi / 2.5
-    N_l = 10
-    lattice = U1.create_lattice(lattice_size)
-    %timeit U1.update(lattice, beta, dL, N_l= N_l)
+
     
     
     
 lattice_size = [4,4,4,4]
-beta = 1
+beta = 0.99
 dL = np.pi / 2.5
  # standard deviation of the change
-N_B = 2
+N_B = 1
 N_TH = 100 # thermalisation steps
 N_SW = 200 # number of oberservations 
 N_l = 2
-N_RM = 50
-N_NR = 30
-E_MIN = 0.59
-E_MAX = 0.62
+N_RM = 1
+N_NR = 1
+E_MIN = 0.56
+E_MAX = 0.571
 dE = 0.01
-seed = 987
+seed = 0
 
 filename = './output/RM'+str(lattice_size[0])+str(lattice_size[1])+str(lattice_size[2])+str(lattice_size[3])+'b'+str(beta)+'s'+str(seed) + '.txt'
 a = LLRmain(lattice_size, beta, dL, N_B, N_TH, N_SW,N_l,N_NR, N_RM, E_MIN, E_MAX, dE, filename,seed)

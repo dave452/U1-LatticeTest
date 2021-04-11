@@ -6,7 +6,7 @@ Created on Thu Mar  4 15:21:51 2021
 """
 import matplotlib.pyplot as plt
 import numpy as np
-def plota(filename):
+def grabValues(filename, N_NR, bool_plot):
     file = open(filename)
     
     a_i = []
@@ -64,33 +64,38 @@ def plota(filename):
         indices = np.where(E==e)
         c = 0
         for i in indices[0]:
-            plt.plot( range(count[i+1] - count[i]),A[count[i]:count[i+1]])
+            if(bool_plot):
+                plt.plot( range(count[i+1] - count[i]),A[count[i]:count[i+1]])
             mfa += A[count[i+1]-1]
             c += 1
         mfa /= c
         mean_final_a_i.append(mfa)
-        plt.title('E_i = ' + str(e))
-        plt.show()
-        
-    plt.plot(E_unique, mean_final_a_i, 'kx')
-
-def poop():
-    P = []
-    A = []
-    B = []
-    A.append([0,1])
-    A.append([1,2])
-    P.extend(A)
-    print(P)
-    A.clear()
-    A.append([3,4,5])
-    P.extend(A)
-    print(P)
-    A.clear()
-    A.append([4])
-    P.extend(A)
-    print(P)
+        if(bool_plot):
+            plt.title('E_i = ' + str(e))
+            plt.axvline(N_NR,color ='k', linestyle = '--')
+            plt.show()
+    return E_unique, mean_final_a_i
+def plota(filename, N_NR, plot):
+    E_unique, mean_final_a_i = grabValues(filename, N_NR, plot)
+    if not plot:    
+        plt.plot(E_unique, -1. * np.array(mean_final_a_i), 'bx')
 
 
-filenames = './output/RM4444b1s987.txt'
-plota(filenames)
+N_NR = 10
+files = ['./output/Cluster/RM4444E0.47.txt','./output/Cluster/RM4444E0.48.txt',
+         './output/Cluster/RM4444E0.49.txt',
+         './output/Cluster/RM4444E0.50.txt','./output/Cluster/RM4444E0.51.txt',
+         './output/Cluster/RM4444E0.52.txt','./output/Cluster/RM4444E0.53.txt',
+         './output/Cluster/RM4444E0.54.txt','./output/Cluster/RM4444E0.55.txt',
+         './output/Cluster/RM4444E0.56.txt',
+         './output/Cluster/RM4444E0.57.txt', './output/Cluster/RM4444E0.58.txt',
+         './output/Cluster/RM4444E0.59.txt', './output/Cluster/RM4444E0.60.txt',
+         './output/Cluster/RM4444E0.61.txt', './output/Cluster/RM4444E0.62.txt',
+         './output/Cluster/RM4444E0.63.txt', './output/Cluster/RM4444E0.64.txt',
+         './output/Cluster/RM4444E0.65.txt', './output/Cluster/RM4444E0.66.txt']
+
+for file in files:
+    plota(file, N_NR, True)
+
+for file in files:
+    plota(file, N_NR, False)
