@@ -37,7 +37,8 @@ def LLRRMUpdate(lattice, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, RM = True):
 
     return a_i_change, VEV_E, lattice
 
-def LLRmain(lattice_size, beta, dL, N_B, N_TH, N_SW,N_l, N_NR, N_RM, E_MIN, E_MAX, dE,output_filename, seed = 0):
+def LLRmain(input_filename,output_filename):
+    lattice_size, beta, a_in, dL, N_B, N_TH, N_SW,N_l,N_NR, N_RM, E_MIN, E_MAX, dE,seed = ReadInput(input_filename)
     new_seed = np.random.seed(seed)
     #open output file and output system variables
     output_file = open(output_filename, 'a')
@@ -46,10 +47,11 @@ def LLRmain(lattice_size, beta, dL, N_B, N_TH, N_SW,N_l, N_NR, N_RM, E_MIN, E_MA
     output_file.write('\nBeta:{:.5f}, N_TH:{:.5f}, N_SW:{:.5f}, N_l:{:.5f}, dTheta:{:.5f}'.format(beta,N_TH,N_SW,N_l, dL))
     output_file.write('\nN_NR:{:.5f},N_RM:{:.5f}, E_MIN:{:.5f}, E_MAX:{:.5f}, dE:{:.5f}'.format(N_NR,N_RM,E_MIN,E_MAX,dE))
     output_file.write('\nN_B:{:.5f}'.format(N_B))
+    output_file.write('\na_in:{:.5f}'.format(a_in))
     output_file.write('\nSeed: {:.0f}'.format(seed))
     output_file.close()
     a_len = int((E_MAX-E_MIN) / dE)
-    a = np.ones((a_len, N_B))
+    a = np.ones((a_len, N_B)) * a_in
     for i in range(a_len):
         for nb in range(N_B):            
             print('\nBootstrap Iteration: {:.0f}'.format(nb))
@@ -63,8 +65,8 @@ def LLRmain(lattice_size, beta, dL, N_B, N_TH, N_SW,N_l, N_NR, N_RM, E_MIN, E_MA
             E_i = E_MIN + (float(i) * dE)
             output_file.write('\nE_{:.0f} = {:.5f}'.format(i,E_i))
         
-            E_i = E_i * (-1. (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
-            dEnew = dE * (-1. (lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))   
+            E_i = E_i * (-1. *(lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))
+            dEnew = dE * (-1. *(lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))   
                 
             lattice = latticeInitialise(lattice, beta, dL, a[i,nb],dEnew,E_i)
             for nnr in range(N_NR):
@@ -116,30 +118,64 @@ def latticeInitialise(lattice, beta, dL, a_i, dE, E_i):
     print('Initialisation Part 2: Done, After :', thermcount, 'steps')
     return lattice
 
+def ReadInput(filename):
+    file = open(filename)
+    str_Lt = 'Lt ='
+    Lt = 4
+    str_Ls = 'Ls ='
+    Ls = 4
+    str_beta = 'beta ='
+    beta = 1.
+    str_ain = 'a_in ='
+    a_in = 1.
+    str_dL = 'dL ='
+    dL = np.pi / 2.5
+    str_NB = 'N_B ='
+    N_B = 1
+    str_NTH = 'N_TH =' 
+    N_TH = 100
+    str_NSW = 'N_SW ='
+    N_SW = 200
+    str_Nl = 'N_l ='
+    N_l = 2
+    str_NRM ='N_RM ='
+    N_RM = 10
+    str_NNR = 'N_NR =' 
+    N_NR = 10
+    str_EMIN ='E_MIN ='
+    E_MIN = 0.56
+    str_EMAX = 'E_MAX ='
+    E_MAX = 0.571
+    str_dE = 'dE ='
+    dE = 0.01
+    str_seed = 'seed ='
+    seed = 1
+    line = file.readline()
+    while line:
+        if line[:len(str_Lt)] == str_Lt: Lt = int(line[len(str_Lt):])
+        elif line[:len(str_Ls)] == str_Ls: Ls = int(line[len(str_Ls):])
+        elif line[:len(str_beta)] == str_beta: beta = float(line[len(str_beta):])
+        elif line[:len(str_ain)] == str_ain: a_in = float(line[len(str_ain):])
+        elif line[:len(str_dL)] == str_dL: dL = float(line[len(str_dL):])
+        elif line[:len(str_NB)] == str_NB: N_B = int(line[len(str_NB):])
+        elif line[:len(str_NTH)] ==str_NTH: N_TH = int(line[len(str_NTH):])
+        elif line[:len(str_NSW )] ==str_NSW : N_SW = int(line[len(str_NSW ):])
+        elif line[:len(str_Nl )] ==str_Nl : N_l = int(line[len(str_Nl):])
+        elif line[:len(str_NRM)] ==str_NRM : N_RM = int(line[len(str_NRM):])
+        elif line[:len(str_NNR)] ==str_NNR : N_NR = int(line[len(str_NNR):])
+        elif line[:len(str_EMIN)] ==str_EMIN : E_MIN = float(line[len(str_EMIN):])
+        elif line[:len(str_EMAX)] ==str_EMAX : E_MAX = float(line[len(str_EMAX):])
+        elif line[:len(str_dE )] ==str_dE  : dE = float(line[len(str_dE ):])
+        elif line[:len(str_seed)] ==str_seed : seed = int(line[len(str_seed):])
+        line = file.readline()
+    lattice_size = np.array([Lt,Ls,Ls,Ls])
+    return lattice_size, beta, a_in, dL, N_B, N_TH, N_SW,N_l,N_NR, N_RM, E_MIN, E_MAX, dE,seed
+    
+    
 
-    
-    
-    
-lattice_size = [4,4,4,4]
-beta = 0.99
-dL = np.pi / 2.5
- # standard deviation of the change
-N_B = 1
-N_TH = 100 # thermalisation steps
-N_SW = 200 # number of oberservations 
-N_l = 2
-N_RM = 1
-N_NR = 1
-E_MIN = 0.56
-E_MAX = 0.571
-dE = 0.01
-seed = 0
-
-filename = './output/RM'+str(lattice_size[0])+str(lattice_size[1])+str(lattice_size[2])+str(lattice_size[3])+'b'+str(beta)+'s'+str(seed) + '.txt'
-a = LLRmain(lattice_size, beta, dL, N_B, N_TH, N_SW,N_l,N_NR, N_RM, E_MIN, E_MAX, dE, filename,seed)
+inputfile = './INPUT.txt'
+lattice_size, beta, a_in, dL, N_B, N_TH, N_SW,N_l,N_NR, N_RM, E_MIN, E_MAX, dE,seed = ReadInput(inputfile)
+outputfile = './output/RM'+str(E_MIN)+str(E_MAX) + '.txt'
+a = LLRmain(inputfile, outputfile)
 print(a)
-#timerFunction()
-#a_i = 1
-#n =0
-#%timeit timerFunction(lattice_size, beta, dL, N_TH, N_SW,N_l,a_i, n , E_MIN, dE, seed)
 

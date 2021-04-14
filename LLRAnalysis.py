@@ -13,6 +13,8 @@ def grabValues(filename, N_NR, bool_plot):
     A = [[]]
     A.clear()
     E = []
+    beta = []
+    b = 0.
     i = 0 
     j = -1
     line = file.readline()
@@ -24,6 +26,10 @@ def grabValues(filename, N_NR, bool_plot):
         str_restart = 'BEGIN'
         str_plaq = 'Average Plaquette ='
         str_bootstrap = 'Bootstrap Iteration:' 
+        str_beta = 'Beta:'
+        if line[:len(str_beta)] == str_beta:
+            b = float(line[len(str_beta):len(str_beta)+7])
+            print(b)
         if line[:len(str_next)] == str_next:              
             if (i > 0):
                 count.append(i + count[len(count) - 1])
@@ -31,6 +37,7 @@ def grabValues(filename, N_NR, bool_plot):
                 A.extend(a_i) 
                 a_i.clear()
             E.append(float(line[len(str_next)+1:])) 
+            beta.append(b)
             j += 1            
         elif line[:len(str_restart)] == str_restart:
             if(j >= 0):
@@ -50,10 +57,11 @@ def grabValues(filename, N_NR, bool_plot):
     file.close()
     count.append(i + count[len(count) - 1])
     A.extend(a_i)
-    
+    A = np.array(A)
     mean_final_a_i = []
     mfa = 0.
     E = np.array(E)
+    beta = np.array(beta)
     E_unique = []
     colours = ['b','g','r','c','m','y']
     for e in E:
@@ -65,7 +73,8 @@ def grabValues(filename, N_NR, bool_plot):
         c = 0
         for i in indices[0]:
             if(bool_plot):
-                plt.plot( range(count[i+1] - count[i]),A[count[i]:count[i+1]])
+                A[count[i]:count[i+1]] *= beta[i]
+                plt.plot( range(count[i+1] - count[i]),np.array(A[count[i]:count[i+1]]) ,label=beta[i])
             mfa += A[count[i+1]-1]
             c += 1
         mfa /= c
@@ -73,6 +82,7 @@ def grabValues(filename, N_NR, bool_plot):
         if(bool_plot):
             plt.title('E_i = ' + str(e))
             plt.axvline(N_NR,color ='k', linestyle = '--')
+            plt.legend()
             plt.show()
     return E_unique, mean_final_a_i
 def plota(filename, N_NR, plot):
@@ -82,18 +92,20 @@ def plota(filename, N_NR, plot):
 
 
 N_NR = 10
-files = ['./output/Cluster/RM4444E0.47.txt','./output/Cluster/RM4444E0.48.txt',
-         './output/Cluster/RM4444E0.49.txt',
-         './output/Cluster/RM4444E0.50.txt','./output/Cluster/RM4444E0.51.txt',
-         './output/Cluster/RM4444E0.52.txt','./output/Cluster/RM4444E0.53.txt',
-         './output/Cluster/RM4444E0.54.txt','./output/Cluster/RM4444E0.55.txt',
-         './output/Cluster/RM4444E0.56.txt',
-         './output/Cluster/RM4444E0.57.txt', './output/Cluster/RM4444E0.58.txt',
-         './output/Cluster/RM4444E0.59.txt', './output/Cluster/RM4444E0.60.txt',
-         './output/Cluster/RM4444E0.61.txt', './output/Cluster/RM4444E0.62.txt',
-         './output/Cluster/RM4444E0.63.txt', './output/Cluster/RM4444E0.64.txt',
-         './output/Cluster/RM4444E0.65.txt', './output/Cluster/RM4444E0.66.txt']
 
+files = ['./output/Cluster/RM4444E0.57.txt', './output/Cluster/RM4444E0.58.txt',
+          './output/Cluster/RM4444E0.59.txt', './output/Cluster/RM4444E0.60.txt',
+          './output/Cluster/RM4444E0.61.txt', './output/Cluster/RM4444E0.62.txt',
+          './output/Cluster/RM4444E0.63.txt', './output/Cluster/RM4444E0.64.txt',
+          './output/Cluster/RM4444E0.65.txt', './output/Cluster/RM4444E0.66.txt']
+#'./output/Cluster/witherr/RM4444E0.47.txt','./output/Cluster/witherr/RM4444E0.48.txt',
+          # './output/Cluster/witherr/RM4444E0.49.txt',
+          # './output/Cluster/witherr/RM4444E0.50.txt','./output/Cluster/witherr/RM4444E0.51.txt',
+          # './output/Cluster/witherr/RM4444E0.52.txt','./output/Cluster/witherr/RM4444E0.53.txt',
+          # './output/Cluster/witherr/RM4444E0.54.txt','./output/Cluster/witherr/RM4444E0.55.txt',
+          # './output/Cluster/witherr/RM4444E0.56.txt',
+          
+#files = ['./output/Cluster/53Test/RM4444E0.53.txt']
 for file in files:
     plota(file, N_NR, True)
 

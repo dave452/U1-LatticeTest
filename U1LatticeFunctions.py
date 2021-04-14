@@ -146,7 +146,7 @@ def change_link(lattice,beta, dL, current_ind, link_ind, S, E, dE, a_i, N_l):
         accept = accept and (llraccept) # or (llrthermaccept and llrTherm)
         if(not accept):       
             #revert changes if change not accepted
-            S_change = 0
+            S_change = 0.
             lattice[current_ind[0],current_ind[1],current_ind[2],current_ind[3]].U1_angle[link_ind] -= link_change
         else:
             S_current = S_new
