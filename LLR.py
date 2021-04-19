@@ -79,8 +79,8 @@ def LLRmain(input_filename,output_filename):
                 a_change, VEV_E, lattice = LLRRMUpdate(lattice, beta, dL, N_TH, N_SW,N_l, a[i,nb], nrm_i, E_i, dEnew, RM=True)
                 a[i,nb] = a[i,nb] + a_change    
             output_file.write('\na_{:.0f}_0 = {:.5f}'.format(i,a[i,nb]))
-            for nrm in (np.array(range(N_RM)) + 10):
-                a_change, VEV_E, lattice = LLRRMUpdate(lattice, beta, dL, N_TH, N_SW,N_l, a[i,nb], nrm, E_i, dEnew, RM=True)
+            for nrm in range(N_RM):
+                a_change, VEV_E, lattice = LLRRMUpdate(lattice, beta, dL, N_TH, N_SW,N_l, a[i,nb], nrm + 10, E_i, dEnew, RM=True)
                 a[i,nb] = a[i,nb] + a_change                  
                 print('a_i_{:.0f}: {:.3f}'.format(nrm + 1,a[i,nb]))
                 output_file.write('\na_{:.0f}_{:.0f} = {:.5f}'.format(i,nrm + 1,a[i,nb]))
