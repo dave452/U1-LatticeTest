@@ -80,8 +80,10 @@ def grabValues(filename, N_NR, bool_plot):
         mfa /= c
         mean_final_a_i.append(mfa)
         if(bool_plot):
-            plt.title('E_i = ' + str(e))
+            #plt.title('E_i = ' + str(e))
             plt.axvline(N_NR,color ='k', linestyle = '--')
+            plt.ylabel('a_i')
+            plt.xlabel('i')
             plt.legend()
             plt.show()
     return E_unique, mean_final_a_i
@@ -89,25 +91,33 @@ def plota(filename, N_NR, plot):
     E_unique, mean_final_a_i = grabValues(filename, N_NR, plot)
     if not plot:    
         plt.plot(E_unique, -1. * np.array(mean_final_a_i), 'bx')
+        plt.ylabel('a_i')
+        plt.xlabel('<E>/V')
 
 
-N_NR = 10
-
-files = ['./output/Cluster/RM4444E0.57.txt', './output/Cluster/RM4444E0.58.txt',
-          './output/Cluster/RM4444E0.59.txt', './output/Cluster/RM4444E0.60.txt',
-          './output/Cluster/RM4444E0.61.txt', './output/Cluster/RM4444E0.62.txt',
-          './output/Cluster/RM4444E0.63.txt', './output/Cluster/RM4444E0.64.txt',
-          './output/Cluster/RM4444E0.65.txt', './output/Cluster/RM4444E0.66.txt']
-#'./output/Cluster/witherr/RM4444E0.47.txt','./output/Cluster/witherr/RM4444E0.48.txt',
-          # './output/Cluster/witherr/RM4444E0.49.txt',
-          # './output/Cluster/witherr/RM4444E0.50.txt','./output/Cluster/witherr/RM4444E0.51.txt',
-          # './output/Cluster/witherr/RM4444E0.52.txt','./output/Cluster/witherr/RM4444E0.53.txt',
-          # './output/Cluster/witherr/RM4444E0.54.txt','./output/Cluster/witherr/RM4444E0.55.txt',
-          # './output/Cluster/witherr/RM4444E0.56.txt',
-          
-#files = ['./output/Cluster/53Test/RM4444E0.53.txt']
+N_NR = 20
+# folder = './output/Cluster/'
+# files = ['RM4444E0.48.txt', 
+#           'RM4444E0.49.txt', 'RM4444E0.50.txt',
+#           'RM4444E0.51.txt', 'RM4444E0.52.txt',
+#           'RM4444E0.53.txt', 'RM4444E0.54.txt',
+#           'RM4444E0.55.txt', 'RM4444E0.56.txt',
+#           'RM4444E0.57.txt', 'RM4444E0.58.txt',
+#           'RM4444E0.59.txt', 'RM4444E0.60.txt',
+#           'RM4444E0.61.txt', 'RM4444E0.62.txt',
+#           'RM4444E0.63.txt', 'RM4444E0.64.txt',
+#           'RM4444E0.65.txt', 'RM4444E0.66.txt']
+folder = './output/OscillationTest/'
+files = ['RM4444E0.6NTH50NSW50Nl1.txt','RM4444E0.6NTH50NSW50Nl2.txt',
+          'RM4444E0.6NTH50NSW50Nl3.txt','RM4444E0.6NTH50NSW50Nl4.txt',
+          'RM4444E0.6NTH50NSW100Nl1.txt','RM4444E0.6NTH50NSW200Nl1.txt',
+          'RM4444E0.6NTH50NSW300Nl1.txt','RM4444E0.6NTH50NSW400Nl1.txt',
+          'RM4444E0.6NTH50NSW500Nl1.txt','RM4444E0.6NTH100NSW50Nl1.txt',
+          'RM4444E0.6NTH200NSW50Nl1.txt','RM4444E0.6NTH300NSW50Nl1.txt',
+          'RM4444E0.6NTH400NSW50Nl1.txt','RM4444E0.6NTH500NSW50Nl1.txt']
 for file in files:
-    plota(file, N_NR, True)
-
+    plt.title(file)
+    plota(folder + file, N_NR, True)
+    
 for file in files:
-    plota(file, N_NR, False)
+    plota(folder + file, N_NR, False)
