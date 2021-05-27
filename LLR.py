@@ -38,7 +38,7 @@ def LLRRMUpdate(lattice, beta, dL, N_TH, N_SW,N_l, a_i, n, E_i, dE, RM = True):
     return a_i_change, VEV_E, lattice
 
 def LLRmain(input_filename,output_filename):
-    lattice_size, a_in, dL, N_B, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,seed,N_NR_in, N_RM_in = ReadInput(input_filename)
+    lattice_size, a_in, dL, N_B, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,seed,N_NR_in, N_RM_in, n_in = ReadInput(input_filename)
     beta = 1.
     new_seed = np.random.seed(seed)
     #open output file and output system variables
@@ -48,6 +48,7 @@ def LLRmain(input_filename,output_filename):
     output_file.write('\nBeta:{:.5f}, N_TH:{:.5f}, N_SW:{:.5f}, N_l:{:.5f}, dTheta:{:.5f}'.format(beta,N_TH,N_SW,N_l, dL))
     output_file.write('\nN_RM:{:.5f}, E_MIN:{:.5f}, E_MAX:{:.5f}, dE:{:.5f}'.format(N_RM,E_MIN,E_MAX,dE))
     output_file.write('\nN_NR_in:{:.5f}, N_RM_in:{:.5f}'.format(N_NR_in, N_RM_in))
+    output_file.write('\nn_in:{:.5f}'.format(n_in))
     output_file.write('\nN_B:{:.5f}'.format(N_B))
     output_file.write('\na_in:{:.5f}'.format(a_in))
     output_file.write('\nSeed: {:.0f}'.format(seed))
@@ -71,16 +72,27 @@ def LLRmain(input_filename,output_filename):
             dEnew = dE * (-1. *(lattice.shape[0]*lattice.shape[1]*lattice.shape[2]*lattice.shape[3]*6))   
                 
             lattice = latticeInitialise(lattice, beta, dL, a[i,nb],dEnew,E_i)
-            #############Initialise the value of a
+            output_file.write('\nLattice initialised')
+            output_file.close()
+            output_file = open(output_filename, 'a')
+            #############Prerun a that doesn't really work
+            ############For no prerun set N_NR_in and N_RM_in = 0
+            ##########NR = newton raphson method (basically not suppressed by n)    
+            ##########Will converge to result faster but larger error
             for nnr_i in range(N_NR_in):
                 a_change, VEV_E, lattice = LLRRMUpdate(lattice, beta, dL, N_TH, N_SW,N_l, a[i,nb], nnr_i, E_i, dEnew, RM= False)
-                a[i,nb] = a[i,nb] + a_change      
+                a[i,nb] = a[i,nb] + a_change   
+            #########Standard RM iteration
             for nrm_i in range(N_RM_in):
                 a_change, VEV_E, lattice = LLRRMUpdate(lattice, beta, dL, N_TH, N_SW,N_l, a[i,nb], nrm_i, E_i, dEnew, RM=True)
                 a[i,nb] = a[i,nb] + a_change    
             output_file.write('\na_{:.0f}_0 = {:.5f}'.format(i,a[i,nb]))
+            output_file.close()
+            
+            ##############Actual LLR run
+            output_file = open(output_filename, 'a')
             for nrm in range(N_RM):
-                a_change, VEV_E, lattice = LLRRMUpdate(lattice, beta, dL, N_TH, N_SW,N_l, a[i,nb], nrm + 10, E_i, dEnew, RM=True)
+                a_change, VEV_E, lattice = LLRRMUpdate(lattice, beta, dL, N_TH, N_SW,N_l, a[i,nb], nrm + n_in, E_i, dEnew, RM=True)
                 a[i,nb] = a[i,nb] + a_change                  
                 print('a_i_{:.0f}: {:.3f}'.format(nrm + 1,a[i,nb]))
                 output_file.write('\na_{:.0f}_{:.0f} = {:.5f}'.format(i,nrm + 1,a[i,nb]))
@@ -97,9 +109,11 @@ def LLRmain(input_filename,output_filename):
     return a
 
 
-def latticeInitialise(lattice, beta, dL, a_i, dE, E_i):    
+def latticeInitialise(lattice, beta, dL, a_i, dE, E_i):   
+    #Gets initial lattice into energy range
+    #Probably a better way to do this
     print(a_i)
-    for i in range(1000):
+    for i in range(100):
         lattice, accept_prob, S = U1.update(lattice, beta, dL, N_l = 1, a_i = a_i)
         #print('{:.0f}/{:.0f}-Acceptance Probability: {:.3f}'.format(i+1,N_TH,accept_prob))
     print('Initialisation Part 1: Done')
@@ -120,6 +134,7 @@ def latticeInitialise(lattice, beta, dL, a_i, dE, E_i):
     return lattice
 
 def ReadInput(filename):
+    #Reads from input file
     file = open(filename)
     str_Lt = 'Lt ='
     Lt = 4
@@ -151,6 +166,8 @@ def ReadInput(filename):
     dE = 0.01
     str_seed = 'seed ='
     seed = 0
+    str_n_in = 'n_in ='
+    n_in = 0
     line = file.readline()
     while line:
         if line[:len(str_Lt)] == str_Lt: Lt = int(line[len(str_Lt):])
@@ -168,14 +185,15 @@ def ReadInput(filename):
         elif line[:len(str_EMAX)] ==str_EMAX : E_MAX = float(line[len(str_EMAX):])
         elif line[:len(str_dE )] ==str_dE  : dE = float(line[len(str_dE ):])
         elif line[:len(str_seed)] ==str_seed : seed = int(line[len(str_seed):])
+        elif line[:len(str_n_in)] ==str_n_in : n_in = int(line[len(str_n_in):])
         line = file.readline()
     lattice_size = np.array([Lt,Ls,Ls,Ls])
-    return lattice_size, a_in, dL, N_B, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,seed,N_NR_in, N_RM_in
+    return lattice_size, a_in, dL, N_B, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,seed,N_NR_in, N_RM_in, n_in
     
     
 
 inputfile = './INPUT.txt'
-lattice_size, a_in, dL, N_B, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,seed,N_NR_in, N_RM_in = ReadInput(inputfile)
+lattice_size, a_in, dL, N_B, N_TH, N_SW,N_l, N_RM, E_MIN, E_MAX, dE,seed,N_NR_in, N_RM_in, n_in = ReadInput(inputfile)
 outputfile = './output/RM4444E'+str(E_MIN)+ '.txt'
 a = LLRmain(inputfile, outputfile)
 print(a)

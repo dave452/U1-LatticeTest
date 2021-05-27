@@ -5,16 +5,17 @@ Ls = 4
 dL = 1.2566370614359172
 N_TH = 200
 N_SW = 300
-N_l = 2
+N_l = 1
 #Initialise a 
 a_in = 0.98
-N_RM_in = 10
-N_NR_in = 90
+N_RM_in = 0
+N_NR_in = 0
+n_in = 0
 #Result a
 N_RM = 200
 #Range
-E_MIN = 0.60
-E_MAX = 0.61
-dE = 0.01
+E_MIN = 0.600
+E_MAX = 0.60011
+dE = 0.0001
 #Bootstrap repeats
 N_B = 1

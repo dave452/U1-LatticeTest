@@ -107,14 +107,16 @@ N_NR = 20
 #           'RM4444E0.61.txt', 'RM4444E0.62.txt',
 #           'RM4444E0.63.txt', 'RM4444E0.64.txt',
 #           'RM4444E0.65.txt', 'RM4444E0.66.txt']
-folder = './output/OscillationTest/'
-files = ['RM4444E0.6NTH50NSW50Nl1.txt','RM4444E0.6NTH50NSW50Nl2.txt',
-          'RM4444E0.6NTH50NSW50Nl3.txt','RM4444E0.6NTH50NSW50Nl4.txt',
-          'RM4444E0.6NTH50NSW100Nl1.txt','RM4444E0.6NTH50NSW200Nl1.txt',
-          'RM4444E0.6NTH50NSW300Nl1.txt','RM4444E0.6NTH50NSW400Nl1.txt',
-          'RM4444E0.6NTH50NSW500Nl1.txt','RM4444E0.6NTH100NSW50Nl1.txt',
-          'RM4444E0.6NTH200NSW50Nl1.txt','RM4444E0.6NTH300NSW50Nl1.txt',
-          'RM4444E0.6NTH400NSW50Nl1.txt','RM4444E0.6NTH500NSW50Nl1.txt']
+# folder = './output/OscillationTest/'
+# files = ['RM4444E0.6NTH50NSW50Nl1.txt','RM4444E0.6NTH50NSW50Nl2.txt',
+#           'RM4444E0.6NTH50NSW50Nl3.txt','RM4444E0.6NTH50NSW50Nl4.txt',
+#           'RM4444E0.6NTH50NSW100Nl1.txt','RM4444E0.6NTH50NSW200Nl1.txt',
+#           'RM4444E0.6NTH50NSW300Nl1.txt','RM4444E0.6NTH50NSW400Nl1.txt',
+#           'RM4444E0.6NTH50NSW500Nl1.txt','RM4444E0.6NTH100NSW50Nl1.txt',
+#           'RM4444E0.6NTH200NSW50Nl1.txt','RM4444E0.6NTH300NSW50Nl1.txt',
+#           'RM4444E0.6NTH400NSW50Nl1.txt','RM4444E0.6NTH500NSW50Nl1.txt']
+folder = './output/'
+files = ['RM4444E0.6.txt']
 for file in files:
     plt.title(file)
     plota(folder + file, N_NR, True)
